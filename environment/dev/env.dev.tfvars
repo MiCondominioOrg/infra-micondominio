@@ -1,4 +1,6 @@
 region   = "us-east-1"
-owner    = "058264402063"
+owner    = "654654589924"
 proyecto = "Datalake"
 ambiente = "dev"
+glue_role_name = "GlueDataAccessRole"
+glue_policy_name = "GlueFullAccessPolicy"

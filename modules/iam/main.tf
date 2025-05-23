@@ -1,5 +1,5 @@
 resource "aws_iam_role" "glue_role" {
-    name = "GlueDataAccessRole"
+    name = var.role_name
 
     assume_role_policy = jsonencode({
         Version = "2012-10-17"
@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "glue_policy_doc" {
 }
 
 resource "aws_iam_policy" "glue_policy" {
-    name   = "GlueFullAccessPolicy"
+    name   = var.policy_name
     policy = data.aws_iam_policy_document.glue_policy_doc.json
 }
 

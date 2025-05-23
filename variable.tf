@@ -19,3 +19,13 @@ variable "ambiente" {
     type        = string
 }
 
+variable "glue_role_name" {
+    description = "Nombre del rol IAM para Glue"
+    type        = string
+}
+
+variable "glue_policy_name" {
+    description = "Nombre de la policy IAM"
+    type        = string
+}
+
