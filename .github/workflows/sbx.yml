@@ -1,4 +1,4 @@
-name: Terraform Dev Only
+name: Terraform Sbx
 
 on:
   push:
