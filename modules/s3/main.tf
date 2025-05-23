@@ -1,6 +1,6 @@
 # Crear los buckets con configuración básica
 resource "aws_s3_bucket" "data_lake_buckets" {
-    for_each = { for bucket in local.buckets : bucket.name => bucket }
+    for_each = { for bucket in var.buckets : bucket.name => bucket }
 
     bucket = each.key
 

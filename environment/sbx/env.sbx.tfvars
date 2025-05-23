@@ -1,0 +1,6 @@
+region   = "us-east-1"
+owner    = "654654589924"
+proyecto = "Datalake"
+ambiente = "sbx"
+glue_role_name = "SbxGlueDataAccessRole"
+glue_policy_name = "SbxGlueFullAccessPolicy"
