@@ -1,4 +1,4 @@
-# Terraform app
+# Terraform app 
 terraform {
   backend "s3" {
     bucket = "g2-state"
