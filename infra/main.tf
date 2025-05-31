@@ -18,3 +18,10 @@ module "iam" {
   role_name   = var.glue_role_name
   policy_name = var.glue_policy_name
 }
+module "glue" {
+  source    = "../modules/glue"
+  ambiente  = var.ambiente
+  glue_role_arn = module.iam.glue_role_arn
+  source_bucket  = module.s3.bucket_map["Raw"]
+  target_bucket  = module.s3.bucket_map["Stage"]
+}

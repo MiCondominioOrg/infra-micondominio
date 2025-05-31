@@ -5,3 +5,7 @@ output "role_name" {
 output "policy_arn" {
   value = aws_iam_policy.glue_policy.arn
 }
+
+output "glue_role_arn" {
+  value = aws_iam_role.glue_role.arn
+}
