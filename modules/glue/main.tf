@@ -4,29 +4,32 @@ resource "aws_s3_bucket" "glue_bucket" {
 }
 
 data "template_file" "glue_job_script" {
-  template = file("./glue_script/g2_script.py")
+  for_each = var.glue_jobs
 
+  template = file("./glue_script/${each.value.script_file}")
   vars = {
-    source_bucket = var.source_bucket
-    target_bucket = var.target_bucket
+    source_bucket = each.value.source_bucket
+    target_bucket = each.value.target_bucket
   }
 }
 
 resource "aws_s3_object" "glue_script" {
-  bucket = aws_s3_bucket.glue_bucket.bucket
-  key    = "scripts/g2_script.py"
-  content = data.template_file.glue_job_script.rendered
-#   source = "./glue_script/g2_script.py"
-#   etag   = filemd5("./glue_script/g2_script.py")
+  for_each = var.glue_jobs
+
+  bucket  = aws_s3_bucket.glue_bucket.bucket
+  key     = "scripts/${each.value.script_file}"
+  content = data.template_file.glue_job_script[each.key].rendered
 }
 
-resource "aws_glue_job" "g2_glue_job" {
-  name     = "g2-${var.ambiente}-glue-job"
-  role_arn = var.glue_role_arn
+resource "aws_glue_job" "glue_jobs" {
+  for_each = var.glue_jobs
+
+  name     = "g2-glue-${each.key}-${var.ambiente}"
+  role_arn = each.value.glue_role_arn
 
   command {
     name            = "glueetl"
-    script_location = "s3://${aws_s3_bucket.glue_bucket.bucket}/scripts/g2_script.py"
+    script_location = "s3://${aws_s3_bucket.glue_bucket.bucket}/scripts/${each.value.script_file}"
     python_version  = "3"
   }
 
@@ -40,12 +43,11 @@ resource "aws_glue_job" "g2_glue_job" {
 
   max_retries = 0
   timeout     = 2880
-  description = "Glue job"
+  description = "Glue job ${each.key}"
   tags = {
-    Environment = "dev"
+    Environment = var.ambiente
   }
 
-  # Para activar Job Insights
   execution_class = "STANDARD"
 
   connections = []
