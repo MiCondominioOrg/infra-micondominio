@@ -1,0 +1,516 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "ParallelGlueJobsRawStage",
+  "States": {
+    "ParallelGlueJobsRawStage": {
+      "Type": "Parallel",
+      "Next": "StatusCheckGlueJobsRawStageMAP",
+      "Branches": [
+        {
+          "StartAt": "StartGlueJobCuotas",
+          "States": {
+            "StartGlueJobCuotas": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_cuotas-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobCuotas"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobCuotas": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobDepartamentos",
+          "States": {
+            "StartGlueJobDepartamentos": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_departamentos-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobDepartamentos"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobDepartamentos": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobEdificios",
+          "States": {
+            "StartGlueJobEdificios": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_edificios-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobEdificios"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobEdificios": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobEmpresas",
+          "States": {
+            "StartGlueJobEmpresas": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_empresas-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobEmpresas"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobEmpresas": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobFacturas",
+          "States": {
+            "StartGlueJobFacturas": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_facturas-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobFacturas"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobFacturas": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobGastos",
+          "States": {
+            "StartGlueJobGastos": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_gastos-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobGastos"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobGastos": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobInquilinos",
+          "States": {
+            "StartGlueJobInquilinos": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_inquilinos-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobInquilinos"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobInquilinos": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+         {
+          "StartAt": "StartGlueJobPagos",
+          "States": {
+            "StartGlueJobPagos": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_pagos-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobPagos"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobPagos": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+         {
+          "StartAt": "StartGlueJobPresupuestos",
+          "States": {
+            "StartGlueJobPresupuestos": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_presupuestos-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobPresupuestos"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobPresupuestos": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobPropietarios",
+          "States": {
+            "StartGlueJobPropietarios": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_propietarios-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobPropietarios"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobPropietarios": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "StartGlueJobProveedores",
+          "States": {
+            "StartGlueJobProveedores": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_proveedores-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackGlueJobProveedores"
+                }
+              ],
+              "End": true
+            },
+            "fallbackGlueJobProveedores": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "StatusCheckGlueJobsRawStageMAP": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "ValidateGlueJobRawStage",
+        "States": {
+          "ValidateGlueJobRawStage": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "And": [
+                  {
+                    "Variable": "$.JobRunState",
+                    "IsPresent": true
+                  },
+                  {
+                    "Variable": "$.JobRunState",
+                    "StringEquals": "SUCCEEDED"
+                  }
+                ],
+                "Next": "SuccessGlueJobRawStage"
+              }
+            ],
+            "Default": "SNSFailGlueJobRawStage"
+          },
+          "SuccessGlueJobRawStage": {
+            "Type": "Succeed"
+          },
+          "SNSFailGlueJobRawStage": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sns:publish",
+            "Parameters": {
+              "TopicArn": "${sns_topic_arn}",
+              "Message.$": "$"
+            },
+            "Next": "FailGlueJobRawStage"
+          },
+          "FailGlueJobRawStage": {
+            "Type": "Fail"
+          }
+        }
+      },
+      "Next": "ParallelGlueProducts"
+    },
+    "ParallelGlueProducts": {
+      "Type": "Parallel",
+      "Next": "ProductJobMap",
+      "Branches": [
+        {
+          "StartAt": "StartGlueJobProductPresuGasto",
+          "States": {
+            "StartGlueJobProductPresuGasto": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_product_presu_gasto-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackProductPresuGasto"
+                }
+              ],
+              "End": true
+            },
+            "fallbackProductPresuGasto": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+		{
+          "StartAt": "StartGlueJobProductGastoPeriodo",
+          "States": {
+            "StartGlueJobProductGastoPeriodo": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_product_gasto_periodo-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackProductGastoPeriodo"
+                }
+              ],
+              "End": true
+            },
+            "fallbackProductGastoPeriodo": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        },
+		{
+          "StartAt": "StartGlueJobProductEstadoCuotas",
+          "States": {
+            "StartGlueJobProductEstadoCuotas": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "g2-glue-job_product_estado_cuotas-${ambiente}"
+              },
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "fallbackProductEstadoCuotas"
+                }
+              ],
+              "End": true
+            },
+            "fallbackProductEstadoCuotas": {
+              "Type": "Pass",
+              "Parameters": {
+                "JobResult.$": "States.StringToJson($.Cause)"
+              },
+              "ResultPath": "$",
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "ProductJobMap": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "ProductJobValidate",
+        "States": {
+          "ProductJobValidate": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "And": [
+                  {
+                    "Variable": "$.JobRunState",
+                    "IsPresent": true
+                  },
+                  {
+                    "Variable": "$.JobRunState",
+                    "StringEquals": "SUCCEEDED"
+                  }
+                ],
+                "Next": "SuccessGlueProduct"
+              }
+            ],
+            "Default": "SNSFailGlueProduct"
+          },
+          "SuccessGlueProduct": {
+            "Type": "Succeed"
+          },
+          "SNSFailGlueProduct": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sns:publish",
+            "Parameters": {
+              "TopicArn": "${sns_topic_arn}",
+              "Message.$": "$"
+            },
+            "Next": "FailGlueProduct"
+          },
+          "FailGlueProduct": {
+            "Type": "Fail"
+          }
+        }
+      },
+      "End": true
+    }
+  }
+}

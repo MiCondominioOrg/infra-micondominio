@@ -4,7 +4,7 @@ from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext, DynamicFrame
 from awsglue.job import Job
-from pyspark.sql.functions import col, lit, current_timestamp, to_date
+from pyspark.sql.functions import col, lit, current_timestamp, to_date, date_format, sum, count
 
 ## @params: [JOB_NAME]
 args = getResolvedOptions(sys.argv, ['JOB_NAME']) 
@@ -21,31 +21,9 @@ logger = glueContext.get_logger()
 dbName = "micondominio_lakehouse_db"
 sourceBucketName = "${source_bucket}"
 targetBucketName = "${target_bucket}"
-route = "csv"
-prefixTable = "g2_"
+prefixTable = "g2_product_"
 suffixTable = "_tb"
 
-# Diccionario que mapea nombre de archivo y campos tipo date
-campos_fecha = {
-    "cuotas": ["fecha_emision", "fecha_vencimiento"],
-    "edificios": ["fecha_construccion"],
-    "facturas": ["fecha_emision"],
-    "gastos": ["fecha"],
-    "inquilinos": ["fecha_inicio", "fecha_fin"],
-    "notificaciones": ["fecha_envio"],
-    "pagos": ["fecha_pago"],
-    "propietarios": ["fecha_inicio", "fecha_fin"]
-}
-
-# Diccionario que mapea nombre de archivo y campos tipo double
-campos_double = {
-    "cuotas": ["monto"],
-    "departamentos": ["area_m2"],
-    "facturas": ["monto"],
-    "gastos": ["monto"],
-    "pagos": ["monto"],
-    "presupuestos": ["total_mantenimiento", "total_seguridad", "total_limpieza"]
-}
 
 def get_hudi_settings(dbName, targetTableName, targetPath, primary_key):
     # Configuración común de Hudi
@@ -53,7 +31,7 @@ def get_hudi_settings(dbName, targetTableName, targetPath, primary_key):
         "className": "org.apache.hudi",
         "hoodie.table.name": targetTableName,
         "hoodie.datasource.write.table.type": "COPY_ON_WRITE",
-        "hoodie.datasource.write.operation": "upsert",
+        "hoodie.datasource.write.operation": "insert_overwrite_table",
         "hoodie.datasource.write.recordkey.field": primary_key,
         "hoodie.datasource.write.precombine.field": "transaction_date_time",
         "path": targetPath,
@@ -100,31 +78,29 @@ def get_hudi_settings(dbName, targetTableName, targetPath, primary_key):
 
     return hudi_final_settings
 
-# Main
-table = 'departamentos'
-primary_key = "id_departamento"
-sourcePath = "s3://{b}/{r}/{t}.csv".format(b=sourceBucketName, r=route, t=table)
+# Inicio Programa
+table = "gasto_periodo"
 targetTableName = f"{prefixTable}{table}{suffixTable}"
 targetPath = "s3://{b}/{t}".format(b=targetBucketName, t=targetTableName)
-df = spark.read.option("header", True).csv(sourcePath)
-df = df.withColumn("transaction_date_time", current_timestamp())
-#print(df.show(5, False))
 
-# Cast a date (formato yyyy-MM-dd)
-for campo in campos_fecha.get(table, []):
-    if campo in df.columns:
-        df = df.withColumn(campo, to_date(col(campo), "yyyy-MM-dd"))
+sourcePathCuotas = f"s3://{sourceBucketName}/g2_cuotas_tb/"
+df_cuotas = spark.read.format("hudi").load(sourcePathCuotas)
 
-# Cast a double
-for campo in campos_double.get(table, []):
-    if campo in df.columns:
-        df = df.withColumn(campo, col(campo).cast("double"))
-        
+df_resul = df_cuotas\
+    .groupBy(col("periodo"), col("estado"))\
+    .agg(
+        sum(col("monto")).alias("total"),
+        count("*").alias("cantidad")
+    )
+
 hudi_settings = get_hudi_settings(
     dbName=dbName,
     targetTableName=targetTableName,
-            targetPath=targetPath,
-            primary_key=primary_key
-        )
-df.write.format('hudi').options(**hudi_settings).mode('append').save()
+    targetPath=targetPath,
+    primary_key="periodo,estado"
+)
+
+df_resul = df_resul.withColumn("transaction_date_time", current_timestamp())
+#df_resul.show(10, False)
+df_resul.write.format('hudi').options(**hudi_settings).mode('Overwrite').save()
         

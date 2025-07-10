@@ -81,5 +81,23 @@ locals {
             target_bucket = module.s3.bucket_map["Stage"]
             glue_role_arn = module.iam.glue_role_arn
         }
+        job_product_presu_gasto = {
+            script_file   = "g2_product_presu_gasto_glue_job.py"
+            source_bucket = module.s3.bucket_map["Stage"]
+            target_bucket = module.s3.bucket_map["Product"]
+            glue_role_arn = module.iam.glue_role_arn
+        }
+        job_product_estado_cuotas = {
+            script_file   = "g2_product_estado_cuotas_glue_job.py"
+            source_bucket = module.s3.bucket_map["Stage"]
+            target_bucket = module.s3.bucket_map["Product"]
+            glue_role_arn = module.iam.glue_role_arn
+        }
+        job_product_gasto_periodo = {
+            script_file   = "g2_product_gasto_periodo_glue_job.py"
+            source_bucket = module.s3.bucket_map["Stage"]
+            target_bucket = module.s3.bucket_map["Product"]
+            glue_role_arn = module.iam.glue_role_arn
+        }
     }
 }

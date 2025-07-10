@@ -1,0 +1,6 @@
+region   = "us-east-1"
+owner    = "654654589924"
+proyecto = "Datalake"
+ambiente = "stg"
+glue_role_name = "StgGlueDataAccessRole"
+glue_policy_name = "StgGlueFullAccessPolicy"

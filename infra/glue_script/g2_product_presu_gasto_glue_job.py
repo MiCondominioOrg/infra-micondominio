@@ -4,7 +4,7 @@ from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext, DynamicFrame
 from awsglue.job import Job
-from pyspark.sql.functions import col, lit, current_timestamp, to_date
+from pyspark.sql.functions import col, lit, current_timestamp, to_date, date_format, sum
 
 ## @params: [JOB_NAME]
 args = getResolvedOptions(sys.argv, ['JOB_NAME']) 
@@ -21,31 +21,9 @@ logger = glueContext.get_logger()
 dbName = "micondominio_lakehouse_db"
 sourceBucketName = "${source_bucket}"
 targetBucketName = "${target_bucket}"
-route = "csv"
-prefixTable = "g2_"
+prefixTable = "g2_product_"
 suffixTable = "_tb"
 
-# Diccionario que mapea nombre de archivo y campos tipo date
-campos_fecha = {
-    "cuotas": ["fecha_emision", "fecha_vencimiento"],
-    "edificios": ["fecha_construccion"],
-    "facturas": ["fecha_emision"],
-    "gastos": ["fecha"],
-    "inquilinos": ["fecha_inicio", "fecha_fin"],
-    "notificaciones": ["fecha_envio"],
-    "pagos": ["fecha_pago"],
-    "propietarios": ["fecha_inicio", "fecha_fin"]
-}
-
-# Diccionario que mapea nombre de archivo y campos tipo double
-campos_double = {
-    "cuotas": ["monto"],
-    "departamentos": ["area_m2"],
-    "facturas": ["monto"],
-    "gastos": ["monto"],
-    "pagos": ["monto"],
-    "presupuestos": ["total_mantenimiento", "total_seguridad", "total_limpieza"]
-}
 
 def get_hudi_settings(dbName, targetTableName, targetPath, primary_key):
     # Configuración común de Hudi
@@ -53,7 +31,7 @@ def get_hudi_settings(dbName, targetTableName, targetPath, primary_key):
         "className": "org.apache.hudi",
         "hoodie.table.name": targetTableName,
         "hoodie.datasource.write.table.type": "COPY_ON_WRITE",
-        "hoodie.datasource.write.operation": "upsert",
+        "hoodie.datasource.write.operation": "insert_overwrite_table",
         "hoodie.datasource.write.recordkey.field": primary_key,
         "hoodie.datasource.write.precombine.field": "transaction_date_time",
         "path": targetPath,
@@ -100,31 +78,41 @@ def get_hudi_settings(dbName, targetTableName, targetPath, primary_key):
 
     return hudi_final_settings
 
-# Main
-table = 'departamentos'
-primary_key = "id_departamento"
-sourcePath = "s3://{b}/{r}/{t}.csv".format(b=sourceBucketName, r=route, t=table)
+# Inicio Programa
+table = "presu_vs_gasto"
 targetTableName = f"{prefixTable}{table}{suffixTable}"
 targetPath = "s3://{b}/{t}".format(b=targetBucketName, t=targetTableName)
-df = spark.read.option("header", True).csv(sourcePath)
-df = df.withColumn("transaction_date_time", current_timestamp())
-#print(df.show(5, False))
 
-# Cast a date (formato yyyy-MM-dd)
-for campo in campos_fecha.get(table, []):
-    if campo in df.columns:
-        df = df.withColumn(campo, to_date(col(campo), "yyyy-MM-dd"))
+sourcePathGastos = f"s3://{sourceBucketName}/g2_gastos_tb/"
+df_gastos = spark.read.format("hudi").load(sourcePathGastos)
 
-# Cast a double
-for campo in campos_double.get(table, []):
-    if campo in df.columns:
-        df = df.withColumn(campo, col(campo).cast("double"))
-        
+sourcePathFacturas = f"s3://{sourceBucketName}/g2_facturas_tb/"
+df_facturas = spark.read.format("hudi").load(sourcePathFacturas)
+
+sourcePathPresupuestos = f"s3://{sourceBucketName}/g2_presupuestos_tb/"
+df_presupuestos = spark.read.format("hudi").load(sourcePathPresupuestos)
+
+df_pagos_agrup = df_gastos.alias('g')\
+    .join(df_facturas.alias('f'), col('g.id_factura') == col('f.id_factura'), 'inner')\
+    .withColumn("periodo_gasto", date_format(col("g.fecha"), "yyyy-MM"))\
+    .groupBy(col("f.tipo_servicio"), col("periodo_gasto"))\
+    .agg(
+        sum(col("g.monto")).alias("monto_pagado"),
+        sum(col("f.monto") - col("g.monto")).alias("deuda_pendiente")
+    )
+
+dfFinal = df_presupuestos.alias('h')\
+    .join(df_pagos_agrup.alias('m'), col('h.periodo') == col('m.periodo_gasto'), 'inner')\
+    .select('h.id_presupuesto', 'h.periodo', 'h.total_mantenimiento', 'h.total_limpieza', 'h.total_seguridad', 'm.tipo_servicio', 'm.monto_pagado', 'm.deuda_pendiente', 'm.periodo_gasto')
+
 hudi_settings = get_hudi_settings(
     dbName=dbName,
     targetTableName=targetTableName,
-            targetPath=targetPath,
-            primary_key=primary_key
-        )
-df.write.format('hudi').options(**hudi_settings).mode('append').save()
+    targetPath=targetPath,
+    primary_key="periodo,tipo_servicio"
+)
+
+dfFinal = dfFinal.withColumn("transaction_date_time", current_timestamp())
+#dfFinal.show(10, False)
+dfFinal.write.format('hudi').options(**hudi_settings).mode('Overwrite').save()
         

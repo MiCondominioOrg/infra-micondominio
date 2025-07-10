@@ -26,3 +26,21 @@ module "glue" {
   target_bucket  = module.s3.bucket_map["Stage"]
   glue_jobs = local.glue_jobs
 }
+
+resource "aws_sns_topic" "topic_sns_g2" {
+  name = "topic_sns_g2-${var.ambiente}"
+}
+
+
+module "g2_step_function" {
+  source   = "../modules/step_function"
+  name     = "g2-${var.ambiente}-step-function"
+  role_arn = module.iam.glue_role_arn
+  definition = templatefile("./step_definitions/datapipeline-micondominio.json", {
+    ambiente = var.ambiente,
+    sns_topic_arn  = aws_sns_topic.topic_sns_g2.arn
+  })
+  tags = {
+    Environment = var.ambiente
+  }
+}

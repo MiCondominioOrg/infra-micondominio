@@ -19,8 +19,10 @@ logger = glueContext.get_logger()
 
 # Parametros
 dbName = "micondominio_lakehouse_db"
-sourceBucketName = "raw-apartments-management-dev-654654589924" 
-targetBucketName = "stage-apartments-management-dev-654654589924"
+# sourceBucketName = "raw-apartments-management-dev-654654589924" 
+# targetBucketName = "stage-apartments-management-dev-654654589924"
+sourceBucketName = "${source_bucket}"
+targetBucketName = "${target_bucket}"
 route = "csv"
 prefixTable = "g2_"
 suffixTable = "_tb"
