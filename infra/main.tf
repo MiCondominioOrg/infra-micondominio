@@ -24,4 +24,5 @@ module "glue" {
   glue_role_arn = module.iam.glue_role_arn
   source_bucket  = module.s3.bucket_map["Raw"]
   target_bucket  = module.s3.bucket_map["Stage"]
+  glue_jobs = local.glue_jobs
 }
