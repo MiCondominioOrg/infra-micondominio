@@ -31,7 +31,7 @@ resource "aws_sns_topic" "topic_sns_g2" {
   name = "topic_sns_g2-${var.ambiente}"
 }
 
-# g2 Step Function 
+# g2 Step Function
 module "g2_step_function" {
   source   = "../modules/step_function"
   name     = "g2-${var.ambiente}-step-function"
