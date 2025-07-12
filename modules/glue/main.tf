@@ -58,5 +58,7 @@ resource "aws_glue_job" "glue_jobs" {
     "--enable-continuous-cloudwatch-log" = "true"
     "--enable-glue-datacatalog"          = "true"
     "--additional-python-modules"        = "pydeequ"
+    "--conf"                             = "spark.serializer=org.apache.spark.serializer.KryoSerializer --conf spark.sql.hive.convertMetastoreParquet=false"
+    "--datalake-formats"                 = "hudi"
   }
 }
